@@ -25,7 +25,6 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                             nftAddress,
                             tokenId]
             }
-
             let parameter = {
                 from: current_address,
                 maxFeePerGas: web3.utils.toWei('100', 'gwei'), // Example max fee per gas
@@ -33,6 +32,17 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
             }
             var instance = await deploy_contract.deploy(payload).send(parameter);
             console.log("New vault address: " + instance.options.address);
+            
+            // Deposit the NFT
+            const instance_nft = new web3.eth.Contract(
+                AbiErc721,
+                nftAddress
+            );
+            console.log("Approving NFT")
+            await instance_nft.methods.approve(instance.options.address, tokenId).send( {from: current_address });
+            console.log("Depositing NFT")
+            await instance.methods.deposit().send({ from: current_address });
+            console.log("NFT deposited")
         }catch (error) {
             setErrorMessage("Error while borrowing NFT");
         }
