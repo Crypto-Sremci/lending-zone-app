@@ -3,11 +3,24 @@ import Erc721Vault from "../contracts/ERC721Vault.json";
 import Usdc from "../contracts/USDC.json";
 import Evc from "../contracts/Evc.json";
 import CollateralNftShow from "./ColateralNftShow";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const PayOut = ({web3, setErrorMessage, current_address}) => {
     const [valutDepth, setValutDepth] = useState("1");
     const [collaterals, setCollaterals] = useState([]);
+
+    const notify = (message) => toast(message, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        className: 'bg-gray-800 text-white',
+    });
 
     const getFoundsFromVault = async () => {
         const instance = new web3.eth.Contract(
@@ -61,13 +74,13 @@ const PayOut = ({web3, setErrorMessage, current_address}) => {
             const amountInWei = web3.utils.toWei(amount, "mwei");
             console.log("Allowance: " + allowance);
             if (allowance < amountInWei) {
-                console.log("Approving USDC")
+                notify("Approving USDC")
                 // Approve the contract to spend the USDC
                 await instance_usdc.methods.approve(Erc721Vault.address, amountInWei).send( {from: current_address });
                 console.log("Approved USDC")
             }
             
-            console.log("Paying out USDC")
+            notify("Paying out USDC")
             await instance.methods.repay(amountInWei, current_address).send({ from: current_address });
             console.log("Payed USDC")
             await getFoundsFromVault();
@@ -112,10 +125,16 @@ const PayOut = ({web3, setErrorMessage, current_address}) => {
             : 
                 <div className="grid grid-cols-2 text-center opacity-75 w-full shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 bg-gray-900">
                     {collaterals.map((collateral, index) => (
-                        <CollateralNftShow key={index} web3={web3} setErrorMessage={setErrorMessage} current_address={current_address} nftvalut_address={collateral} />
+                        <CollateralNftShow key={index} 
+                                           web3={web3} 
+                                           setErrorMessage={setErrorMessage} 
+                                           current_address={current_address} 
+                                           nftvalut_address={collateral}
+                                           updateColaterals={getCollaterals} />
                     ))}
                 </div>
             }
+            <ToastContainer position="top-center" />
         </div>
     );
 };

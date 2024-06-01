@@ -3,12 +3,25 @@ import NFTVault from "../contracts/NFTVault.json";
 import AbiErc721 from "../contracts/ABI-ERC721.json";
 import IpfsImageComponent from "./IpfsImageComponent";
 import Evc from "../contracts/Evc.json";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const PayOut = ({web3, setErrorMessage, current_address, nftvalut_address, updateColaterals}) => {
     const [NftAddress, setNftAddress] = useState("");
     const [TokenId, setTokenId] = useState("");
     const [imageUrl, setImageUrl] = useState("");
+
+    const notify = (message) => toast(message, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        className: 'bg-gray-800 text-white',
+    });
 
     function shortenAddress(address, length = 6) {
         if (address.length <= length) {
@@ -68,12 +81,12 @@ const PayOut = ({web3, setErrorMessage, current_address, nftvalut_address, updat
                 NFTVault.abi,
                 nftvalut_address
             );
-            console.log("Disable Colateral")
+            notify("Disable Colateral")
             await instance_evc.methods.disableCollateral(current_address, nftvalut_address).send({ from: current_address });
             console.log("Colateral disabled")
-            console.log("Collecting NFT")
+            notify("Collecting NFT")
             await instance_nft_valut.methods.withdraw(current_address).send({ from: current_address });
-            console.log("NFT collected")
+            notify("NFT collected!")
             updateColaterals();
         } catch (error) {
             setErrorMessage("Error while collecting NFT: " + error);

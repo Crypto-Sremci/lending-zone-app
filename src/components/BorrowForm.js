@@ -6,6 +6,8 @@ import NftOracle from "../contracts/NftOracle.json";
 import Usdc from "../contracts/USDC.json";
 import Evc from "../contracts/Evc.json";
 import Erc721Vault from "../contracts/ERC721Vault.json";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const BorrowForm = ({web3, setErrorMessage, current_address}) => {
@@ -13,6 +15,17 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
     const [nftPrice, setNftPrice] = useState("");
     const [nftAddress, setNftAddress] = useState("");
     const [tokenId, setTokenId] = useState("");
+
+    const notify = (message) => toast(message, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        className: 'bg-gray-800 text-white',
+    });
 
     const handleBorrow = async (e) => {
         e.preventDefault();
@@ -31,6 +44,7 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                 maxFeePerGas: web3.utils.toWei('100', 'gwei'), // Example max fee per gas
                 maxPriorityFeePerGas: web3.utils.toWei('2', 'gwei') // Example max priority fee per gas
             }
+            notify("Preparing NFT deposit vault")
             var instance = await deploy_contract.deploy(payload).send(parameter);
             console.log("New vault address: " + instance.options.address);
             
@@ -46,9 +60,9 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
             let owner_address = await instance_vault_nft.methods.owner().call();
             console.log("Owner address: " + owner_address);
             console.log(instance_vault_nft)
-            console.log("Approving NFT")
+            notify("Approving NFT")
             await instance_nft.methods.approve(instance.options.address, tokenId).send( {from: current_address });
-            console.log("Depositing NFT")
+            notify("Depositing NFT")
             await instance_vault_nft.methods.deposit().send({ from: current_address });
             console.log("NFT deposited")
 
@@ -61,16 +75,17 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                 Erc721Vault.abi,
                 Erc721Vault.address
             );
-            console.log("Enable Controler")
+            notify("Enable Controler and Colateral")
             await instance_evc.methods.enableController(current_address, Erc721Vault.address).send({ from: current_address });
             console.log("Controler enabled")
             console.log("Enable Colateral")
             await instance_evc.methods.enableCollateral(current_address, instance.options.address).send({ from: current_address });
             console.log("Colateral enabled")
-            console.log("Borrowing USDC")
+            notify("Borrowing USDC")
             const amount = web3.utils.toWei(Number(nftPrice), "mwei");
             await instance_lending_vault.methods.borrow(amount, current_address).send({ from: current_address });
-            console.log("USDC borrowed")
+            notify("USDC borrowed!")
+            setImageUrl("");
         }catch (error) {
             console.log(error)
             setErrorMessage("Error while borrowing NFT");
@@ -173,6 +188,7 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                     </button>
                 </div>
             }
+            <ToastContainer position="top-center" />
         </div>
     );
 };
