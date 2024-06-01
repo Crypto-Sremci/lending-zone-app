@@ -38,12 +38,20 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                 AbiErc721,
                 nftAddress
             );
+            const instance_vault_nft = new web3.eth.Contract(
+                NftVault.abi,
+                instance.options.address
+            );
+            let owner_address = await instance_vault_nft.methods.owner().call();
+            console.log("Owner address: " + owner_address);
+            console.log(instance_vault_nft)
             console.log("Approving NFT")
             await instance_nft.methods.approve(instance.options.address, tokenId).send( {from: current_address });
             console.log("Depositing NFT")
-            await instance.methods.deposit().send({ from: current_address });
+            await instance_vault_nft.methods.deposit().send({ from: current_address });
             console.log("NFT deposited")
         }catch (error) {
+            console.log(error)
             setErrorMessage("Error while borrowing NFT");
         }
     }

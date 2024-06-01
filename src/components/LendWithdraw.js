@@ -72,7 +72,7 @@ const LendWithdraw = ({web3, setErrorMessage, current_address}) => {
                 }
             } else {
                 try {
-                    if (valutBalance < amount) {
+                    if (Number(valutBalance) < amount) {
                         setErrorMessage("Not enough funds in the vault");
                         return;
                     }
