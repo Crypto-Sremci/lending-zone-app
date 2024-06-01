@@ -61,12 +61,15 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                 Erc721Vault.abi,
                 Erc721Vault.address
             );
-            console.log("Enable EVC")
+            console.log("Enable Controler")
+            await instance_evc.methods.enableController(current_address, Erc721Vault.address).send({ from: current_address });
+            console.log("Controler enabled")
+            console.log("Enable Colateral")
             await instance_evc.methods.enableCollateral(current_address, instance.options.address).send({ from: current_address });
-            console.log("EVC enabled")
+            console.log("Colateral enabled")
             console.log("Borrowing USDC")
-            const amountInWei = web3.utils.toWei(nftPrice, "mwei");
-            await instance_lending_vault.methods.borrow(amountInWei, current_address).send({ from: current_address });
+            const amount = web3.utils.toWei(Number(nftPrice), "mwei");
+            await instance_lending_vault.methods.borrow(amount, current_address).send({ from: current_address });
             console.log("USDC borrowed")
         }catch (error) {
             console.log(error)
@@ -113,11 +116,12 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                     NftOracle.address
                 );
                 const currPrice = await oracle_instance.methods.getQuote(Usdc.address, nft_address, token_id).call();
+                var reaulPrice = web3.utils.fromWei(currPrice, "mwei");
 
                 // TODO: remove logs
-                console.log("Evaluated price: " + currPrice);
+                console.log("Evaluated price: " + reaulPrice);
 
-                setNftPrice(currPrice.toString());
+                setNftPrice(reaulPrice.toString());
                 setNftAddress(nft_address);
                 setTokenId(token_id);
                 setImageUrl(url);
