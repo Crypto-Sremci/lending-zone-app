@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import MenuButton from './components/MenuButton.js';
 import BorrowForm from './components/BorrowForm.js';
+import LendWithdraw from './components/LendWithdraw.js';
 
 import Web3 from "web3";
 
@@ -18,6 +19,38 @@ function App() {
       try {
         setErrorMessage("");
         if (window.ethereum) {
+          try{
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0xaa36a7' }] // Sepolia chain ID
+            });
+          } catch (error) {
+            if (error.code === 4902) {
+              // Chain is not added to MetaMask
+              try {
+                  await window.ethereum.request({
+                      method: 'wallet_addEthereumChain',
+                      params: [{
+                          chainId: '0xaa36a7',
+                          chainName: 'Sepolia Test Network',
+                          rpcUrls: ['https://sepolia.drpc.org'],
+                          nativeCurrency: {
+                              name: 'SepoliaETH',
+                              symbol: 'SepoliaETH',
+                              decimals: 18
+                          },
+                          blockExplorerUrls: ['https://sepolia.etherscan.io']
+                      }]
+                  });
+              } catch (addError) {
+                setErrorMessage("Failed to add Sepolia network to MetaMask");
+                return
+              }
+          } else {
+            setErrorMessage("Failed to switch to Sepolia network");
+            return
+          }
+        }
           // Get network provider and web3 instance.
           const web3Instance = new Web3(window.ethereum);
 
@@ -28,6 +61,7 @@ function App() {
 
           setWeb3(web3Instance);
           setOwner(userAccounts[0].toLowerCase());
+          setErrorMessage("");
         } else {
           setErrorMessage("Metamask extension not found in Your browser, be sure to have it in order to use this app.");
         }
@@ -44,6 +78,11 @@ function App() {
     page_content = <BorrowForm web3={web3}
                                setErrorMessage={setErrorMessage}
                                current_address={owner}/>;
+  }
+  else if (currPage === 2) {
+    page_content = <LendWithdraw web3={web3}
+                                 setErrorMessage={setErrorMessage}
+                                 current_address={owner}/>;
   }
 
   return (
