@@ -1,10 +1,23 @@
 import { useState, useEffect } from "react";
 import Erc721Vault from "../contracts/ERC721Vault.json";
 import Usdc from "../contracts/USDC.json";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const LendWithdraw = ({web3, setErrorMessage, current_address}) => {
     const [valutBalance, setValutBalance] = useState(" ");
+
+    const notify = (message) => toast(message, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        className: 'bg-gray-800 text-white',
+    });
 
     const getFoundsFromVault = async () => {
         const instance = new web3.eth.Contract(
@@ -56,13 +69,13 @@ const LendWithdraw = ({web3, setErrorMessage, current_address}) => {
                     const amountInWei = web3.utils.toWei(amount, "mwei");
                     console.log("Allowance: " + allowance);
                     if (allowance < amountInWei) {
-                        console.log("Approving USDC")
+                        notify("Approving USDC")
                         // Approve the contract to spend the USDC
                         await instance_usdc.methods.approve(Erc721Vault.address, amountInWei).send( {from: current_address });
                         console.log("Approved USDC")
                     }
                     
-                    console.log("Depositing USDC")
+                    notify("Depositing USDC")
                     await instance.methods.deposit(amountInWei, current_address).send({ from: current_address });
                     console.log("Deposited USDC")
                     await getFoundsFromVault();
@@ -137,6 +150,7 @@ const LendWithdraw = ({web3, setErrorMessage, current_address}) => {
                     </button>
                 </form>
             </div>
+            <ToastContainer position="top-center" />
         </div>
     );
 };
