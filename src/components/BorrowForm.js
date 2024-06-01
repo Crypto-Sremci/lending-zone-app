@@ -5,6 +5,7 @@ import NftVault from "../contracts/NFTVault.json";
 import NftOracle from "../contracts/NftOracle.json";
 import Usdc from "../contracts/USDC.json";
 import Evc from "../contracts/Evc.json";
+import Erc721Vault from "../contracts/ERC721Vault.json";
 
 
 const BorrowForm = ({web3, setErrorMessage, current_address}) => {
@@ -50,6 +51,23 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
             console.log("Depositing NFT")
             await instance_vault_nft.methods.deposit().send({ from: current_address });
             console.log("NFT deposited")
+
+            // Make a loan
+            const instance_evc = new web3.eth.Contract(
+                Evc.abi,
+                Evc.address
+            );
+            const instance_lending_vault = new web3.eth.Contract(
+                Erc721Vault.abi,
+                Erc721Vault.address
+            );
+            console.log("Enable EVC")
+            await instance_evc.methods.enableCollateral(current_address, instance.options.address).send({ from: current_address });
+            console.log("EVC enabled")
+            console.log("Borrowing USDC")
+            const amountInWei = web3.utils.toWei(nftPrice, "mwei");
+            await instance_lending_vault.methods.borrow(amountInWei, current_address).send({ from: current_address });
+            console.log("USDC borrowed")
         }catch (error) {
             console.log(error)
             setErrorMessage("Error while borrowing NFT");
