@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import Erc721Vault from "../contracts/ERC721Vault.json";
 import Usdc from "../contracts/USDC.json";
+import Evc from "../contracts/Evc.json";
+import CollateralNftShow from "./ColateralNftShow";
 
 
 const PayOut = ({web3, setErrorMessage, current_address}) => {
     const [valutDepth, setValutDepth] = useState("1");
+    const [collaterals, setCollaterals] = useState([]);
 
     const getFoundsFromVault = async () => {
         const instance = new web3.eth.Contract(
@@ -21,6 +24,20 @@ const PayOut = ({web3, setErrorMessage, current_address}) => {
         }
         else {
             setErrorMessage("Contract not found!");
+        }
+    }
+
+    const getCollaterals = async () => {
+        try {
+            const instance = new web3.eth.Contract(
+                Evc.abi,
+                Evc.address
+            );
+            const collaterals = await instance.methods.getCollaterals(current_address).call();
+            console.log("Colaterals: " + collaterals);
+            setCollaterals(collaterals);
+        } catch (error) {
+            setErrorMessage("Failed to get collaterals");
         }
     }
 
@@ -62,6 +79,7 @@ const PayOut = ({web3, setErrorMessage, current_address}) => {
 
     useEffect(() => {
         getFoundsFromVault()
+        getCollaterals()
     }, []);
 
     return (
@@ -92,8 +110,10 @@ const PayOut = ({web3, setErrorMessage, current_address}) => {
                     </form>
                 </div>
             : 
-                <div className="text-center opacity-75 w-full shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 bg-gray-900">
-
+                <div className="grid grid-cols-2 text-center opacity-75 w-full shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 bg-gray-900">
+                    {collaterals.map((collateral, index) => (
+                        <CollateralNftShow key={index} web3={web3} setErrorMessage={setErrorMessage} current_address={current_address} nftvalut_address={collateral} />
+                    ))}
                 </div>
             }
         </div>

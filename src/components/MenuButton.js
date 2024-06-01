@@ -4,9 +4,9 @@ const MenuButton = ({ title, setCurrPage, pageNumber, currNumber }) => {
         setCurrPage(pageNumber);
     }
 
-    var menuColor = "opacity-75 w-full shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 cursor-pointer bg-gray-900";
+    var menuColor = "opacity-75 w-full shadow-lg rounded-lg px-8 pt-6 pb-6 mb-4 cursor-pointer bg-gray-900";
     if (pageNumber === currNumber) {
-        menuColor = "opacity-75 w-full shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 cursor-pointer bg-gray-700";
+        menuColor = "opacity-75 w-full shadow-lg rounded-lg px-8 pt-6 pb-6 mb-4 cursor-pointer bg-gray-700";
     }
 
     return (
