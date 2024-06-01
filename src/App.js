@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import MenuButton from './components/MenuButton.js';
 import BorrowForm from './components/BorrowForm.js';
 import LendWithdraw from './components/LendWithdraw.js';
+import PayOut from './components/PayOut.js';
 
 import Web3 from "web3";
 
@@ -83,6 +84,11 @@ function App() {
     page_content = <LendWithdraw web3={web3}
                                  setErrorMessage={setErrorMessage}
                                  current_address={owner}/>;
+  }
+  else if (currPage === 3) {
+    page_content = <PayOut web3={web3}
+                           setErrorMessage={setErrorMessage}
+                           current_address={owner}/>;
   }
 
   return (
