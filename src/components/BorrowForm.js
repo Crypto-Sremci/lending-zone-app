@@ -125,13 +125,32 @@ const BorrowForm = ({web3, setErrorMessage, current_address}) => {
                     return;
                 }
 
+                // Calculate price
+                notify("Estimating NFT price!")
+                const response = await fetch('http://34.88.110.98:5000/token-price/' + nft_address + '/' + token_id);
+                if (!response.ok) {
+                    setErrorMessage("Error estimating price");
+                    return;
+                }
+                var reaulPrice = await response.json();
+                reaulPrice = reaulPrice.value;
+
                 // Get the NFT price
                 const oracle_instance = new web3.eth.Contract(
                     NftOracle.abi,
                     NftOracle.address
                 );
-                const currPrice = await oracle_instance.methods.getQuote(Usdc.address, nft_address, token_id).call();
-                var reaulPrice = web3.utils.fromWei(currPrice, "mwei");
+                var tries = 0;
+                var currPrice = 0;
+                while (reaulPrice === currPrice) {
+                    currPrice = await oracle_instance.methods.getQuote(Usdc.address, nft_address, token_id).call();
+                    if (tries === 50) {
+                        setErrorMessage("Error while fetching NFT price");
+                        return;
+                    }
+                    tries++;
+                }
+                reaulPrice = web3.utils.fromWei(reaulPrice, "mwei");
 
                 // TODO: remove logs
                 console.log("Evaluated price: " + reaulPrice);
